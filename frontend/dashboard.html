@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Analytics Dashboard | Password Strength Analyzer</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Header Navigation -->
+  <header>
+    <div class="nav-bar">
+      <a href="/" class="brand">
+        <div class="brand-icon">🛡️</div>
+        <span>CyberGuard / Security Analytics</span>
+      </a>
+      <nav class="nav-links">
+        <a href="/" class="nav-link">← Return to Live Analyzer</a>
+        <a href="/dashboard" class="nav-link active">Analytics Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    
+    <section class="hero" style="padding: 24px 10px 16px;">
+      <h1>Defensive Telemetry & Analytics Dashboard</h1>
+      <p>
+        Real-time statistical aggregations demonstrating organizational password patterns.
+        Strictly zero-knowledge: only non-invertible mathematical counts and frequencies are persisted.
+      </p>
+    </section>
+
+    <!-- Stat Cards Overview -->
+    <div class="breakdown-grid" style="margin-top: 0; margin-bottom: 24px;">
+      <div class="card" style="margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Total Evaluations</h4>
+        <div class="metric-value" id="stat-total" style="font-size: 2.2rem; color: var(--accent-cyan);">--</div>
+        <div class="metric-note">Processed in-memory</div>
+      </div>
+      <div class="card" style="margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Average Score</h4>
+        <div class="metric-value" id="stat-avg" style="font-size: 2.2rem; color: var(--status-moderate);">-- / 100</div>
+        <div class="metric-note">Across all evaluations</div>
+      </div>
+      <div class="card" style="margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Strong & Very Strong</h4>
+        <div class="metric-value" id="stat-strong-pct" style="font-size: 2.2rem; color: var(--status-strong);">--%</div>
+        <div class="metric-note">Meeting robust defense</div>
+      </div>
+      <div class="card" style="margin-bottom: 0;">
+        <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Zero-Knowledge Status</h4>
+        <div class="metric-value" style="font-size: 1.4rem; color: var(--status-strong); margin-top: 6px;">100% Enforced</div>
+        <div class="metric-note">0 passwords stored</div>
+      </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+      <!-- Chart 1: Classification Distribution -->
+      <div class="chart-card">
+        <h3 style="margin-bottom: 12px; font-size: 1.05rem;">Strength Classification Distribution</h3>
+        <div style="position: relative; height: 260px;">
+          <canvas id="chart-classification"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 2: Length Buckets Distribution -->
+      <div class="chart-card">
+        <h3 style="margin-bottom: 12px; font-size: 1.05rem;">Password Length Distribution</h3>
+        <div style="position: relative; height: 260px;">
+          <canvas id="chart-length"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 3: Top Detected Weaknesses -->
+      <div class="chart-card" style="grid-column: 1 / -1;">
+        <h3 style="margin-bottom: 12px; font-size: 1.05rem;">Most Frequent Weakness & Pattern Categories Detected</h3>
+        <div style="position: relative; height: 260px;">
+          <canvas id="chart-weaknesses"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Safe Telemetry Table -->
+    <div class="card" style="margin-top: 24px;">
+      <div class="card-title">
+        <span>Recent Anonymous Evaluations (Safe Telemetry Log)</span>
+        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.82rem;" onclick="loadDashboardData()">
+          🔄 Refresh
+        </button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+        Notice that only non-invertible metrics (length, entropy, classification, score) are recorded.
+        Plaintext passwords and hashes do not exist in the database schema.
+      </p>
+      <div style="overflow-x: auto;">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Scan ID</th>
+              <th>Score</th>
+              <th>Classification</th>
+              <th>Length</th>
+              <th>Theoretical Entropy</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="telemetry-table-body">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading telemetry records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Schema Privacy Proof Card -->
+    <div class="card" style="margin-top: 24px; border-left: 4px solid var(--accent-cyan);">
+      <div class="card-title">
+        <span>Database Schema Zero-Knowledge Verification</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+        Proof of defensive architecture: The database schema stores ONLY aggregate parameters.
+      </p>
+      <pre style="background: var(--bg-card); padding: 14px; border-radius: 8px; font-family: var(--font-mono); font-size: 0.82rem; color: #a5f3fc; overflow-x: auto;">
+CREATE TABLE analyses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    analyzed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    score INTEGER NOT NULL,
+    classification TEXT NOT NULL,
+    password_length INTEGER NOT NULL,
+    unique_character_ratio REAL NOT NULL,
+    theoretical_entropy REAL NOT NULL,
+    adjusted_entropy REAL NOT NULL,
+    weakness_count INTEGER NOT NULL DEFAULT 0
+    -- NO password column! NO hash column! NO user PII!
+);
+
+CREATE TABLE findings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    analysis_id INTEGER NOT NULL,
+    finding_type TEXT NOT NULL,
+    severity TEXT NOT NULL,
+    description TEXT NOT NULL
+);
+      </pre>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Password Strength Analyzer & Security Suggestion Tool &copy; 2026. Built with Python & Flask.</p>
+    </div>
+  </footer>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

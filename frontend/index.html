@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Strength Analyzer & Security Suggestion Tool</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="nav-bar">
+      <a href="/" class="brand">
+        <div class="brand-icon">🛡️</div>
+        <span>CyberGuard / Password Analyzer</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#analyzer" class="nav-link active" onclick="switchTab('analyzer')">Live Analyzer</a>
+        <a href="#policy" class="nav-link" onclick="switchTab('policy')">Policy Checker</a>
+        <a href="#generator" class="nav-link" onclick="switchTab('generator')">Generator</a>
+        <a href="#hashing" class="nav-link" onclick="switchTab('hashing')">Hashing Lab</a>
+        <a href="/dashboard" class="nav-link">Analytics Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    
+    <!-- Hero / Intro -->
+    <section class="hero">
+      <h1>Defensive Password Strength Analyzer</h1>
+      <p>
+        Evaluating real-world password security through <strong>length</strong>, <strong>unpredictability</strong>,
+        <strong>pattern resistance</strong>, and <strong>entropy</strong> — moving beyond naive composition rules.
+      </p>
+    </section>
+
+    <!-- Tab Buttons -->
+    <div class="tabs-container">
+      <button class="tab-btn active" id="tab-btn-analyzer" onclick="switchTab('analyzer')">
+        🔍 Live Strength Analyzer
+      </button>
+      <button class="tab-btn" id="tab-btn-policy" onclick="switchTab('policy')">
+        📋 Enterprise Policy Checker
+      </button>
+      <button class="tab-btn" id="tab-btn-generator" onclick="switchTab('generator')">
+        🎲 Secure Generator & Passphrases
+      </button>
+      <button class="tab-btn" id="tab-btn-hashing" onclick="switchTab('hashing')">
+        🔐 Hashing Lab & Hygiene Rules
+      </button>
+    </div>
+
+    <!-- ==========================================
+         TAB 1: LIVE ANALYZER & METER
+         ========================================== -->
+    <section id="panel-analyzer" class="tab-panel active">
+      
+      <!-- Interactive Input Card -->
+      <div class="card">
+        <div class="card-title">
+          <span>Candidate Password Input</span>
+          <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">
+            ⚡ Real-time local evaluation
+          </span>
+        </div>
+
+        <div class="input-wrapper">
+          <input 
+            type="password" 
+            id="password-input" 
+            class="password-input" 
+            placeholder="Type or paste a candidate password to evaluate..."
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <button type="button" id="toggle-pwd-btn" class="toggle-visibility-btn" title="Toggle password visibility">
+            👁️
+          </button>
+        </div>
+
+        <!-- Safe Demo Buttons -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;">
+          <span style="font-size: 0.82rem; color: var(--text-dim); margin-right: 4px;">Quick Demo Test Cases:</span>
+          <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="loadDemoPassword('123456')">123456</button>
+          <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="loadDemoPassword('Password123!')">Password123!</button>
+          <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="loadDemoPassword('aaaaaaaaaaaaaaaa')">aaaaaaaaaaaaaaaa</button>
+          <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="loadDemoPassword('qwerty2026!')">qwerty2026!</button>
+          <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="loadDemoPassword('galaxy-meadow-whisper-pebble')">Passphrase</button>
+        </div>
+
+        <!-- Optional Context Accordion -->
+        <div class="context-toggle" onclick="toggleContextBox()">
+          <span id="context-caret">▶</span> Optional Demographic Context Check (Zero-Storage Test)
+        </div>
+        <div id="context-box" class="context-box">
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 8px;">
+            🔒 <em>Defensive Simulation:</em> Attackers routinely scrape target OSINT data. Enter synthetic context
+            to verify if the password contains personal names or years. (Never stored or logged).
+          </p>
+          <div class="context-grid">
+            <input type="text" id="ctx-name" class="context-input" placeholder="First Name (e.g. Rahul)">
+            <input type="text" id="ctx-year" class="context-input" placeholder="Birth Year (e.g. 1998)">
+            <input type="text" id="ctx-org" class="context-input" placeholder="College / Company (e.g. Acme)">
+          </div>
+        </div>
+
+        <!-- Real-Time Strength Meter -->
+        <div class="meter-header">
+          <div>
+            <span style="font-size: 0.85rem; color: var(--text-muted); margin-right: 8px;">STRENGTH ASSESSMENT:</span>
+            <span id="classification-badge" class="classification-badge badge-very-weak">AWAITING INPUT</span>
+          </div>
+          <div class="score-display" id="score-display">0 / 100</div>
+        </div>
+
+        <div class="meter-track">
+          <div id="meter-fill" class="meter-fill" style="width: 0%; background-color: var(--status-very-weak);"></div>
+        </div>
+
+      </div>
+
+      <!-- Analytical Breakdown Grid -->
+      <div class="breakdown-grid">
+
+        <!-- Length Analysis -->
+        <div class="metric-card">
+          <h4>
+            <span>Length Analysis</span>
+            <span id="length-badge" class="pill">0 chars</span>
+          </h4>
+          <div class="metric-value" id="length-val">0</div>
+          <div class="metric-note" id="length-desc">Enter a password to evaluate length band.</div>
+        </div>
+
+        <!-- Character Diversity -->
+        <div class="metric-card">
+          <h4>
+            <span>Character Classes</span>
+            <span id="diversity-ratio" class="pill">0 / 4 classes</span>
+          </h4>
+          <div class="metric-value" id="unique-val">0 unique</div>
+          <div class="diversity-pills">
+            <span class="pill" id="pill-lower">abc Lower</span>
+            <span class="pill" id="pill-upper">ABC Upper</span>
+            <span class="pill" id="pill-digit">123 Digits</span>
+            <span class="pill" id="pill-symbol">#$& Symbols</span>
+            <span class="pill" id="pill-space">[ ] Spaces</span>
+          </div>
+        </div>
+
+        <!-- Information Entropy -->
+        <div class="metric-card">
+          <h4>
+            <span>Information Entropy</span>
+            <span id="entropy-bits" class="pill">0.0 bits</span>
+          </h4>
+          <div class="metric-value" id="entropy-adj-val">0.0 adj bits</div>
+          <div class="metric-note" id="crack-est">Crack time: Instant</div>
+        </div>
+
+        <!-- Common Password Alert -->
+        <div class="metric-card">
+          <h4>
+            <span>Dictionary Check</span>
+            <span id="dict-status" class="pill">Safe</span>
+          </h4>
+          <div class="metric-value" id="dict-match-val" style="font-size: 1.1rem; color: var(--status-strong);">Clean</div>
+          <div class="metric-note" id="dict-desc">Evaluated against defensive common credential list.</div>
+        </div>
+
+      </div>
+
+      <!-- Detected Weaknesses & Findings -->
+      <div class="card" id="findings-section" style="margin-top: 24px; display: none;">
+        <div class="card-title">
+          <span>⚠️ Detected Structural Weaknesses & Patterns</span>
+        </div>
+        <div id="findings-container"></div>
+      </div>
+
+      <!-- Actionable Defensive Recommendations -->
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-title">
+          <span>💡 Actionable Defensive Suggestions</span>
+        </div>
+        <div id="suggestions-container">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Enter a password above to receive prioritized, defensive recommendations.
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==========================================
+         TAB 2: ENTERPRISE POLICY CHECKER
+         ========================================== -->
+    <section id="panel-policy" class="tab-panel">
+      <div class="card">
+        <div class="card-title">
+          <span>Enterprise Password Policy Evaluation (NIST SP 800-63B Aligned)</span>
+          <span id="policy-overall-badge" class="classification-badge badge-weak">EVALUATING</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+          Modern identity guidelines (NIST SP 800-63B) mandate length, blacklist screening, and passphrase
+          support, while phasing out counterproductive arbitrary composition complexity rules.
+        </p>
+        <div id="policy-checklist"></div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 3: SECURE GENERATOR & PASSPHRASES
+         ========================================== -->
+    <section id="panel-generator" class="tab-panel">
+      <div class="card">
+        <div class="card-title">
+          <span>Cryptographically Secure Credential Generator</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+          Powered by Python's <code>secrets</code> CSPRNG (backed by kernel entropy).
+          Unlike <code>random</code> (Mersenne Twister), these outputs cannot be reverse-engineered or predicted.
+        </p>
+
+        <!-- Complex Random Password Generator -->
+        <h4 style="color: var(--accent-cyan); margin-bottom: 12px;">Option A: High-Entropy Random Password</h4>
+        <div class="generator-controls">
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 6px;">Length:</label>
+            <select id="gen-length" class="context-input" style="width: 100%;">
+              <option value="16">16 Characters (Solid)</option>
+              <option value="20" selected>20 Characters (Recommended)</option>
+              <option value="24">24 Characters (High Security)</option>
+              <option value="32">32 Characters (Maximum Defense)</option>
+            </select>
+          </div>
+          <div style="display: flex; align-items: flex-end;">
+            <button class="btn" style="width: 100%;" onclick="generatePasswordAction()">
+              ⚡ Generate Random Password
+            </button>
+          </div>
+        </div>
+
+        <div class="input-wrapper">
+          <input type="text" id="gen-output" class="password-input" readonly placeholder="Click Generate...">
+          <button class="btn btn-secondary" style="position: absolute; right: 8px; padding: 8px 14px;" onclick="copyToClipboard('gen-output')">
+            📋 Copy
+          </button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 30px 0;">
+
+        <!-- Diceware Passphrase Generator -->
+        <h4 style="color: var(--accent-cyan); margin-bottom: 12px;">Option B: Diceware Multi-Word Passphrase</h4>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+          Composed of multiple uncorrelated dictionary words. Passphrases are memorable for humans
+          while generating massive entropy against brute-force search algorithms.
+        </p>
+        <div class="generator-controls">
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 6px;">Word Count:</label>
+            <select id="phrase-count" class="context-input" style="width: 100%;">
+              <option value="4">4 Words (~50 bits entropy)</option>
+              <option value="5" selected>5 Words (~65 bits entropy - Recommended)</option>
+              <option value="6">6 Words (~78 bits entropy)</option>
+            </select>
+          </div>
+          <div style="display: flex; align-items: flex-end;">
+            <button class="btn" style="width: 100%;" onclick="generatePassphraseAction()">
+              🎲 Generate Passphrase
+            </button>
+          </div>
+        </div>
+
+        <div class="input-wrapper">
+          <input type="text" id="phrase-output" class="password-input" readonly placeholder="Click Generate Passphrase...">
+          <button class="btn btn-secondary" style="position: absolute; right: 8px; padding: 8px 14px;" onclick="copyToClipboard('phrase-output')">
+            📋 Copy
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 4: HASHING LAB & SECURITY AWARENESS
+         ========================================== -->
+    <section id="panel-hashing" class="tab-panel">
+      
+      <!-- Interactive Hashing Demonstration -->
+      <div class="card">
+        <div class="card-title">
+          <span>Password Hashing Lab: Fast Hash vs Salted Slow KDF</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">
+          Never store plaintext passwords or use fast general-purpose hashes (MD5, SHA-1, SHA-256) for authentication.
+          Modern systems must use salted, memory-hard key derivation functions (Argon2id, PBKDF2, bcrypt).
+        </p>
+
+        <button class="btn" onclick="runHashingDemo()">▶ Run Live Hashing Benchmark</button>
+
+        <div id="hashing-results" style="margin-top: 20px; display: none;">
+          <div style="margin-bottom: 14px;">
+            <strong style="color: var(--status-very-weak);">❌ Fast General-Purpose Hash (Vulnerable to GPU cracking):</strong>
+            <div id="fast-hash-display" class="hash-box"></div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <strong style="color: var(--status-strong);">✅ Salted Slow Key Derivation (PBKDF2-HMAC-SHA256):</strong>
+            <div id="slow-hash-display" class="hash-box"></div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <strong style="color: var(--accent-cyan);">🧂 Salt Demonstration (Same password with a second random salt):</strong>
+            <div id="salt-demo-display" class="hash-box"></div>
+          </div>
+
+          <div id="verify-test-display" class="hash-box" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.3);"></div>
+        </div>
+      </div>
+
+      <!-- 10 Password Security Rules -->
+      <div class="card">
+        <div class="card-title">
+          <span>🛡️ 10 Golden Rules of Defensive Password Security</span>
+        </div>
+        <div class="breakdown-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+          <div class="metric-card">
+            <h4 style="color: var(--accent-cyan);">1. Use Unique Passwords</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Prevent credential stuffing: a single breach must never compromise other critical accounts.</p>
+          </div>
+          <div class="metric-card">
+            <h4 style="color: var(--accent-cyan);">2. Prioritize Length & Passphrases</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Length expands theoretical search space exponentially. 16+ character passphrases defeat brute force.</p>
+          </div>
+          <div class="metric-card">
+            <h4 style="color: var(--accent-cyan);">3. Avoid Personal Identifiers</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Never use names, birth years, pet names, or company names mined via OSINT social engineering.</p>
+          </div>
+          <div class="metric-card">
+            <h4 style="color: var(--accent-cyan);">4. Avoid Known Common Passwords</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Automated cracking attacks test millions of dictionary words and default credentials first.</p>
+          </div>
+          <div class="metric-card">
+            <h4 style="color: var(--accent-cyan);">5. Eliminate Predictable Patterns</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Avoid keyboard walks ('qwerty', '1234') and standard formulaic patterns ('Password123!').</p>
+          </div>
+          <div class="metric-card">
+            <h4 style="color: var(--accent-cyan);">6. Adopt a Password Manager</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Use audited managers (Bitwarden, 1Password) to generate, encrypt, and autofill 20+ character secrets.</p>
+          </div>
+          <div class="metric-card">
+            <h4 style="color: var(--accent-cyan);">7. Enforce Multi-Factor Auth (MFA)</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Enable FIDO2/WebAuthn hardware keys or TOTP authenticator apps. MFA defends against stolen credentials.</p>
+          </div>
+          <div class="metric-card">
+            <h4 style="color: var(--accent-cyan);">8. Never Share Credentials</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Legitimate IT administrators and security teams will never ask for your plaintext password.</p>
+          </div>
+          <div class="metric-card">
+            <h4 style="color: var(--accent-cyan);">9. Watch for Phishing Traps</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Verify domain URLs and SSL certificates before entering credentials into any login prompt.</p>
+          </div>
+          <div class="metric-card">
+            <h4 style="color: var(--accent-cyan);">10. Rotate on Confirmed Breach</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Arbitrary 30-day rotation causes weak substitutions. Immediately change credentials upon verified breach.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Privacy Banner Guarantee -->
+    <div class="privacy-banner">
+      <div style="font-size: 1.5rem;">🔒</div>
+      <div>
+        <strong>Defensive Zero-Knowledge Privacy Architecture:</strong>
+        Passwords evaluated here are processed transiently in volatile application memory.
+        Under no circumstances are plaintext passwords, reversible encryptions, or credential hashes logged,
+        stored in the database, or transmitted across external networks.
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>Password Strength Analyzer & Security Suggestion Tool &copy; 2026. Built with Python & Flask.</p>
+      <p style="margin-top: 4px;">Designed for Defensive Cybersecurity Education, IAM Alignment, and Academic Proof of Work.</p>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
